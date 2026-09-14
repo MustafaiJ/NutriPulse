@@ -30,3 +30,6 @@ Thumbs.db
 /database/*.sqlite
 /database/*.sqlite-*
 /storage/app/**/*.sqlite
+
+# Generated deployment artifacts (deploy/prepare-release.sh output)
+/nutripulse-*.zip
