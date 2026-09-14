@@ -11,9 +11,7 @@ use Illuminate\View\View;
 
 class FoodEntryController extends Controller
 {
-    public function __construct(private readonly NutritionEstimator $estimator)
-    {
-    }
+    public function __construct(private readonly NutritionEstimator $estimator) {}
 
     public function index(Request $request): View
     {
@@ -23,6 +21,7 @@ class FoodEntryController extends Controller
         $entries = FoodEntry::query()
             ->where('user_id', $admin->id)
             ->whereDate('logged_at', $date)
+            ->when($request->user()->isDietitian(), fn ($query) => $query->where('logged_at', '>=', now()->subDays(90)))
             ->orderByDesc('logged_at')
             ->with('comments.user')
             ->get();
@@ -104,18 +103,31 @@ class FoodEntryController extends Controller
             'corrected_macros.fat' => ['nullable', 'integer', 'min:0', 'max:1000'],
         ]);
 
+        $hasCorrections = $request->filled('corrected_calories')
+            || $request->filled('corrected_macros.protein')
+            || $request->filled('corrected_macros.carbs')
+            || $request->filled('corrected_macros.fat');
+
         $entry->update([
             'meal_type' => $request->meal_type,
             'description' => $request->description,
             'portion' => $request->portion,
-            'corrected_calories' => $request->filled('corrected_calories') ? $request->corrected_calories : $entry->corrected_calories,
-            'corrected_macros' => $request->filled('corrected_macros.protein')
+            'corrected_calories' => $request->filled('corrected_calories')
+                ? $request->integer('corrected_calories')
+                : ($hasCorrections ? $entry->corrected_calories : null),
+            'corrected_macros' => $hasCorrections
                 ? [
-                    'protein' => $request->corrected_macros['protein'] ?? $entry->getDisplayMacros()['protein'] ?? null,
-                    'carbs' => $request->corrected_macros['carbs'] ?? $entry->getDisplayMacros()['carbs'] ?? null,
-                    'fat' => $request->corrected_macros['fat'] ?? $entry->getDisplayMacros()['fat'] ?? null,
+                    'protein' => $request->filled('corrected_macros.protein')
+                        ? $request->integer('corrected_macros.protein')
+                        : ($entry->getDisplayMacros()['protein'] ?? null),
+                    'carbs' => $request->filled('corrected_macros.carbs')
+                        ? $request->integer('corrected_macros.carbs')
+                        : ($entry->getDisplayMacros()['carbs'] ?? null),
+                    'fat' => $request->filled('corrected_macros.fat')
+                        ? $request->integer('corrected_macros.fat')
+                        : ($entry->getDisplayMacros()['fat'] ?? null),
                 ]
-                : $entry->corrected_macros,
+                : null,
         ]);
 
         return redirect()

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\DietPlan;
+use App\Models\User;
+use App\Notifications\DietPlanUpdated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -60,7 +62,11 @@ class DietPlanController extends Controller
             'notes' => $request->notes,
         ]);
 
-        // In-app notification to the admin is handled via a queued notification later.
+        $admin = User::where('role', User::ROLE_ADMIN)->first();
+
+        if ($admin !== null) {
+            $admin->notify(new DietPlanUpdated($plan, 'created'));
+        }
 
         return redirect()->route('diet-plans.index')->with('status', 'Diet plan published.');
     }
@@ -100,6 +106,12 @@ class DietPlanController extends Controller
             'active_from' => $request->active_from,
             'notes' => $request->notes,
         ]);
+
+        $admin = User::where('role', User::ROLE_ADMIN)->first();
+
+        if ($admin !== null) {
+            $admin->notify(new DietPlanUpdated($plan, 'updated'));
+        }
 
         return redirect()->route('diet-plans.index')->with('status', 'Diet plan updated.');
     }

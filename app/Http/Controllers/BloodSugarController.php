@@ -23,6 +23,7 @@ class BloodSugarController extends Controller
 
         $latest = BloodSugarReading::query()
             ->where('user_id', $admin->id)
+            ->when($request->user()->isDietitian(), fn ($query) => $query->where('logged_at', '>=', now()->subDays(90)))
             ->orderByDesc('logged_at')
             ->first();
 
@@ -35,7 +36,7 @@ class BloodSugarController extends Controller
             ->where('user_id', $admin->id)
             ->where('logged_at', '>=', now()->subDays($days))
             ->get()
-            ->filter(fn (BloodSugarReading $r) => ! $this->isInRange($r))
+            ->filter(fn (BloodSugarReading $r) => ! $r->isInRange())
             ->count();
 
         return view('blood-sugar.index', [
@@ -46,7 +47,6 @@ class BloodSugarController extends Controller
             'outOfRangeCount' => $rangeCount,
             'days' => $days,
             'targets' => config('health'),
-            'isInRange' => fn (BloodSugarReading $r) => $this->isInRange($r),
         ]);
     }
 
@@ -77,28 +77,6 @@ class BloodSugarController extends Controller
         $reading->delete();
 
         return redirect()->route('blood-sugar.index')->with('status', 'Reading deleted.');
-    }
-
-    /**
-     * Normalize a reading to mg/dL (the app's canonical comparison unit).
-     */
-    public function toMgDl(BloodSugarReading $reading): float
-    {
-        return $reading->unit === 'mmol/L'
-            ? round($reading->value * 18.0182, 1)
-            : (float) $reading->value;
-    }
-
-    public function isInRange(BloodSugarReading $reading): bool
-    {
-        $mgDl = $this->toMgDl($reading);
-        $targets = config('health');
-
-        return match ($reading->context_tag) {
-            'fasting' => $mgDl >= $targets['fasting_min'] && $mgDl <= $targets['fasting_max'],
-            'post_meal' => $mgDl >= $targets['postmeal_min'] && $mgDl <= $targets['postmeal_max'],
-            default => $mgDl >= $targets['random_min'] && $mgDl <= $targets['random_max'],
-        };
     }
 
     private function adminUser(): User

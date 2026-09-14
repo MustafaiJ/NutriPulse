@@ -2,13 +2,12 @@
 
 namespace App\Models;
 
+use Database\Factories\FoodEntryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Attributes\Casts;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Database\Factories\FoodEntryFactory;
 
 #[Fillable([
     'user_id',
@@ -21,17 +20,26 @@ use Database\Factories\FoodEntryFactory;
     'corrected_macros',
     'logged_at',
 ])]
-#[Casts([
-    'ai_macros' => 'array',
-    'corrected_macros' => 'array',
-    'logged_at' => 'datetime',
-])]
 class FoodEntry extends Model
 {
     /** @use HasFactory<FoodEntryFactory> */
     use HasFactory;
 
     public const MEALS = ['breakfast', 'lunch', 'dinner', 'snack'];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'ai_macros' => 'array',
+            'corrected_macros' => 'array',
+            'logged_at' => 'datetime',
+        ];
+    }
 
     public function user(): BelongsTo
     {

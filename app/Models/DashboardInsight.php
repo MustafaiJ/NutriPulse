@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Database\Factories\DashboardInsightFactory;
-use Illuminate\Database\Eloquent\Attributes\Casts;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,15 +14,24 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'generated_at',
     'source',
 ])]
-#[Casts([
-    'generated_at' => 'datetime',
-])]
 class DashboardInsight extends Model
 {
     /** @use HasFactory<DashboardInsightFactory> */
     use HasFactory;
 
     public const SOURCES = ['ai', 'manual'];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'generated_at' => 'datetime',
+        ];
+    }
 
     public function user(): BelongsTo
     {

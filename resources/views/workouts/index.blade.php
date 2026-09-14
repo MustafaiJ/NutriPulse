@@ -118,7 +118,7 @@
                         <div>
                             <h4 class="text-sm font-medium text-gray-700 mb-2">{{ $exercise }}</h4>
                             <canvas class="progress-chart w-full" height="140"
-                                data-chart='@json([
+                                data-chart='@js([
                                     'labels' => $rows->pluck('date'),
                                     'values' => $rows->pluck('weight'),
                                 ])'></canvas>

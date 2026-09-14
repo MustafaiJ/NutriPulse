@@ -22,4 +22,6 @@ return [
     'random_min' => env('TARGET_RANDOM_MIN', 70),
     'random_max' => env('TARGET_RANDOM_MAX', 180),
 
+    'target_calories' => env('TARGET_CALORIES', 2000),
+
 ];

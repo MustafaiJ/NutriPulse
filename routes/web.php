@@ -3,7 +3,9 @@
 use App\Http\Controllers\BloodSugarController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DietPlanController;
+use App\Http\Controllers\ExportController;
 use App\Http\Controllers\FoodEntryController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TravelPeriodController;
 use App\Http\Controllers\UserController;
@@ -14,6 +16,14 @@ Route::get('/', fn () => redirect()->route('dashboard'))->name('home');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/dashboard/insight', [DashboardController::class, 'insight'])
+        ->middleware('role:admin')
+        ->name('dashboard.insight');
+
+    Route::get('/export/data.csv', [ExportController::class, 'csv'])->name('export.csv');
+
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
 
     /* Food log — patient can write, dietitian can read + comment */
     Route::get('/food', [FoodEntryController::class, 'index'])->name('food.index');

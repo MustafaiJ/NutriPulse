@@ -9,7 +9,7 @@
         <!-- Quick stats -->
         <div class="grid grid-cols-3 gap-3">
             <div class="bg-white rounded-xl shadow-sm p-4 text-center">
-                <div class="text-2xl font-bold {{ $latest && ! $isInRange($latest) ? 'text-red-600' : 'text-gray-800' }}">
+                <div class="text-2xl font-bold {{ $latest && ! $latest->isInRange() ? 'text-red-600' : 'text-gray-800' }}">
                     {{ $latest ? $latest->value : '--' }}
                 </div>
                 <div class="text-xs text-gray-500">{{ __('Latest') }} @if ($latest) {{ $latest->unit }} @endif</div>
@@ -95,10 +95,10 @@
 
             @if ($readings->isNotEmpty())
                 <canvas id="sugarChart" height="220" class="w-full"
-                    data-chart='@json([
+                    data-chart='@js([
                         'labels' => $readings->map(fn ($r) => $r->logged_at->format('M j H:i')),
                         'values' => $readings->map(fn ($r) => $r->value),
-                        'inRange' => $readings->map(fn ($r) => $isInRange($r) ? 'rgba(34,197,94,0.8)' : 'rgba(239,68,68,0.8)'),
+                        'inRange' => $readings->map(fn ($r) => $r->isInRange() ? 'rgba(34,197,94,0.8)' : 'rgba(239,68,68,0.8)'),
                     ])'></canvas>
                 <p class="text-xs text-gray-500 mt-2">
                     <span class="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></span>{{ __('In range') }}
@@ -118,7 +118,7 @@
                     @foreach ($readings->reverse() as $reading)
                         <div class="py-2 flex items-center justify-between">
                             <div class="flex items-center gap-2">
-                                <span class="inline-block w-2.5 h-2.5 rounded-full {{ $isInRange($reading) ? 'bg-green-500' : 'bg-red-500' }}"></span>
+                                <span class="inline-block w-2.5 h-2.5 rounded-full {{ $reading->isInRange() ? 'bg-green-500' : 'bg-red-500' }}"></span>
                                 <div>
                                     <span class="font-semibold text-gray-800">{{ $reading->value }} {{ $reading->unit }}</span>
                                     <span class="text-sm text-gray-500 capitalize">· {{ str_replace('_', ' ', $reading->context_tag) }}</span>
