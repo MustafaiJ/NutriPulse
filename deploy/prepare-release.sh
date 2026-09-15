@@ -35,11 +35,12 @@ echo "   Composer      : $COMPOSER_CMD"
 # 1. Fresh staging copy (exclude heavy / machine-specific folders).
 rm -rf "$STAGING"
 mkdir -p "$STAGING"
+# Note: only /\.env$/ is excluded — the `.env.production.example` template
+# IS deliberately shipped so it can be saved-as `.env` on the server.
 tar -cf - \
     --exclude='./.git' \
     --exclude='./node_modules' \
     --exclude='./.env' \
-    --exclude='./.env.*' \
     --exclude='./storage/app/backups' \
     --exclude='./storage/logs/*.log' \
     -C "$REPO" . | tar -xf - -C "$STAGING"
@@ -66,7 +67,6 @@ rm -f "$ZIP"
 zip -r -q "$ZIP" . \
     -x 'node_modules/*' \
     -x '.env' \
-    -x '.env.*' \
     -x '.git/*' \
     -x 'storage/app/backups/*' \
     -x 'storage/logs/*'
